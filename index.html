@@ -1,0 +1,446 @@
+﻿<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>珊瑚守護小隊：海底探險</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chocolate+Classical+Sans&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<style>
+/* 版面概念：海底關卡地圖。頂部是四關進度與星星，中間一張大任務卡，底下是水草與沙地。 */
+:root{
+  --sea-top:#cdeefd; --sea-bot:#8fd3f0; --sand:#ffe9b8;
+  --card:#ffffff; --ink:#1d3a4f; --soft:#5a7486;
+  --coral:#ff6f7d; --sun:#ffb300; --mint:#2fb58a; --violet:#7c5cd6; --ocean:#1e88d6;
+  --line:#cfe6f2; --ok:#e3f8ee; --no:#ffe6e6; --chip:#eef8fd;
+  --display:"Chocolate Classical Sans","Noto Sans TC",sans-serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --sea-top:#0c2a45; --sea-bot:#0a4a6e; --sand:#3b3420;
+  --card:#12344f; --ink:#e8f6ff; --soft:#9cc0d6;
+  --coral:#ff8793; --sun:#ffc54d; --mint:#4fd1a5; --violet:#a58cf0; --ocean:#5db8f5;
+  --line:#245677; --ok:#14513f; --no:#5a2430; --chip:#18425f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --sea-top:#0c2a45; --sea-bot:#0a4a6e; --sand:#3b3420;
+  --card:#12344f; --ink:#e8f6ff; --soft:#9cc0d6;
+  --coral:#ff8793; --sun:#ffc54d; --mint:#4fd1a5; --violet:#a58cf0; --ocean:#5db8f5;
+  --line:#245677; --ok:#14513f; --no:#5a2430; --chip:#18425f; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0}
+body{background:linear-gradient(180deg,var(--sea-top),var(--sea-bot) 70%,var(--sand));background-attachment:fixed;color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:16px 40px;overflow-x:hidden}
+.wrap{max-width:1040px;margin:0 auto;position:relative;z-index:1}
+.bub{position:fixed;border-radius:50%;border:2px solid rgba(255,255,255,.7);background:rgba(255,255,255,.18);animation:rise linear infinite;z-index:0;pointer-events:none}
+@keyframes rise{from{transform:translateY(0)}to{transform:translateY(-110vh)}}
+@media (prefers-reduced-motion:reduce){.bub{animation:none}*{animation-duration:.01s!important;transition:none!important}}
+header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+header svg{width:56px;height:56px;flex:none}
+h1{font-family:var(--display);font-size:clamp(22px,5.5vw,30px);line-height:1.2;margin:0;text-wrap:balance}
+.sub{font-size:13px;color:var(--soft)}
+.hud{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:999px;padding:8px 16px;margin-bottom:14px;box-shadow:0 3px 0 var(--line)}
+.dots{display:flex;gap:8px;flex:1}
+.dot{flex:1;height:10px;border-radius:99px;background:var(--line)}
+.dot.on{background:var(--ocean)} .dot.done{background:var(--mint)}
+.stars{font-weight:900;color:var(--sun);white-space:nowrap;font-variant-numeric:tabular-nums}
+.card{background:var(--card);border-radius:28px;padding:20px;box-shadow:0 5px 0 var(--line);border:3px solid var(--line)}
+.lv{display:inline-block;font-weight:900;font-size:13px;letter-spacing:.08em;color:#fff;background:var(--ocean);border-radius:99px;padding:2px 12px}
+h2{font-family:var(--display);font-size:clamp(20px,5vw,26px);margin:8px 0 4px;text-wrap:balance}
+p{margin:0 0 10px}
+.hint{color:var(--soft);font-size:14px}
+.slots{display:grid;gap:8px;margin:14px 0}
+.slot{display:flex;align-items:center;gap:10px;border:3px dashed var(--line);border-radius:18px;padding:8px 12px;min-height:50px;background:var(--chip)}
+.slot b{flex:none;width:28px;height:28px;border-radius:50%;background:var(--ocean);color:#fff;display:grid;place-items:center;font-size:14px}
+.slot.filled{border-style:solid;border-color:var(--mint);background:var(--ok);font-weight:700}
+.pool{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;color:inherit;cursor:pointer}
+.chip{background:var(--chip);border:3px solid var(--line);border-radius:16px;padding:8px 12px;font-weight:500;text-align:left}
+.chip:hover{border-color:var(--ocean)}
+.chip:focus-visible,.btn:focus-visible,.opt:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.say{background:var(--chip);border:3px solid var(--violet);border-radius:20px;padding:12px 14px;margin:12px 0;position:relative}
+.say small{display:block;font-weight:900;color:var(--violet);margin-bottom:2px}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:10px}
+.opt{background:var(--card);border:3px solid var(--line);border-radius:18px;padding:10px 12px;font-weight:700;text-align:center}
+.opt.long{text-align:left;font-weight:500}
+.opt:hover:not(:disabled){border-color:var(--ocean)}
+.opt.good{background:var(--ok);border-color:var(--mint)}
+.opt.bad{background:var(--no);border-color:var(--coral)}
+.opt:disabled{cursor:default}
+.fb{border-radius:18px;padding:10px 14px;margin-top:12px;font-size:15px}
+.fb.ok{background:var(--ok)} .fb.no{background:var(--no)}
+.fb b{font-weight:900}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:14px;flex-wrap:wrap}
+.btn{background:var(--ocean);color:#fff;border:0;border-radius:99px;padding:10px 22px;font-weight:900;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.btn.alt{background:var(--card);color:var(--ink);border:3px solid var(--line);box-shadow:none}
+.btn:disabled{opacity:.45;cursor:default}
+.pair{display:grid;gap:8px;margin:12px 0}
+.pair div{border-radius:16px;padding:8px 12px}
+.pair .a{background:var(--no)} .pair .b{background:var(--ok)}
+.pair small{font-weight:900;display:block;font-size:12px;letter-spacing:.05em}
+.opts.two{grid-template-columns:1fr 1fr}
+.acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin:12px 0}
+.act{display:flex;gap:10px;align-items:center;background:var(--chip);border:3px solid var(--line);border-radius:18px;padding:10px 12px;text-align:left}
+.act i{flex:none;width:24px;height:24px;border:3px solid var(--ocean);border-radius:7px;background:var(--card);display:grid;place-items:center;font-style:normal;font-weight:900;color:#fff;font-size:15px}
+.act[aria-pressed="true"]{border-color:var(--ocean)} .act[aria-pressed="true"] i{background:var(--ocean)}
+.act.good{background:var(--ok);border-color:var(--mint)} .act.bad{background:var(--no);border-color:var(--coral)}
+.big{font-family:var(--display);font-size:clamp(26px,7vw,38px);text-align:center;margin:6px 0}
+.rank{text-align:center}
+.rank .st{font-size:34px;letter-spacing:6px;color:var(--sun)}
+.sum{display:grid;gap:6px;margin:14px 0}
+.sum div{display:flex;justify-content:space-between;background:var(--chip);border-radius:14px;padding:8px 14px;font-weight:700}
+.note{font-size:13px;color:var(--soft);margin-top:14px}
+
+.stagebox{position:relative;border-radius:28px;overflow:hidden;border:3px solid var(--line);box-shadow:0 5px 0 var(--line);background:#8fd3f0;line-height:0}
+canvas{display:block;width:100%;height:auto;touch-action:none;cursor:pointer;background:#8fd3f0}
+.overlay{position:absolute;inset:0;display:none;align-items:flex-end;justify-content:center;background:rgba(10,40,70,.35);padding:10px;line-height:1.6}
+.overlay.on{display:flex}
+.qbox{width:100%;max-width:640px;max-height:100%;overflow:auto;background:var(--card);color:var(--ink);border-radius:24px;border:3px solid var(--line);padding:14px 16px;box-shadow:0 5px 0 rgba(0,0,0,.15)}
+.who{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.who img{width:54px;height:54px;flex:none}
+.who b{font-family:var(--display);font-size:20px}
+.who span{font-size:13px;color:var(--soft);display:block;line-height:1.3}
+.qbox .say{margin:6px 0 8px}
+.qbox .opts{grid-template-columns:1fr}
+.toast{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:var(--card);color:var(--ink);border:3px solid var(--sun);border-radius:99px;padding:6px 16px;font-weight:900;font-size:14px;line-height:1.4;display:none;z-index:3;max-width:92%;text-align:center}
+.toast.on{display:block}
+.hud2{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.hud2 div{flex:1;min-width:120px;background:var(--card);border-radius:999px;padding:6px 16px;box-shadow:0 3px 0 var(--line);font-weight:900;display:flex;justify-content:space-between;gap:8px}
+.friends{display:flex;gap:4px}
+.friends img{width:26px;height:26px;opacity:.28;filter:grayscale(1)}
+.friends img.on{opacity:1;filter:none}
+.endcard{text-align:center}
+
+.play{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:start}
+.how{background:var(--card);border:3px solid var(--line);border-radius:24px;padding:16px;box-shadow:0 5px 0 var(--line)}
+.how h2{font-size:20px;margin:0 0 8px}
+.how ol{list-style:none;margin:0;padding:0;display:grid;gap:10px;counter-reset:s}
+.how li{counter-increment:s;display:grid;grid-template-columns:28px 1fr;gap:10px;font-size:14px;line-height:1.5}
+.how li::before{content:counter(s);width:28px;height:28px;border-radius:50%;background:var(--ocean);color:#fff;font-weight:900;display:grid;place-items:center;font-size:14px}
+.how li b{display:block;font-size:15px;color:var(--ocean)}
+.how .tip{margin-top:12px;background:var(--chip);border-radius:16px;padding:8px 12px;font-size:13px;color:var(--soft)}
+@media (max-width:900px){.play{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="bubs" aria-hidden="true"></div>
+<div class="wrap">
+  <header>
+    <svg viewBox="0 0 120 120" aria-hidden="true"><g fill="#ff7a8a" stroke="#fff" stroke-width="3"><rect x="22" y="14" width="16" height="50" rx="8" transform="rotate(-18 30 40)"/><rect x="82" y="12" width="16" height="52" rx="8" transform="rotate(18 90 38)"/><rect x="52" y="4" width="16" height="58" rx="8"/></g><ellipse cx="60" cy="82" rx="40" ry="32" fill="#ff8fa0" stroke="#fff" stroke-width="3"/><ellipse cx="46" cy="80" rx="6" ry="8" fill="#3b2a2a"/><ellipse cx="74" cy="80" rx="6" ry="8" fill="#3b2a2a"/><circle cx="48" cy="76" r="2.5" fill="#fff"/><circle cx="76" cy="76" r="2.5" fill="#fff"/><path d="M52,94 Q60,102 68,94" stroke="#8a2b3b" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>
+    <div><h1>珊瑚守護小隊：海底探險</h1><div class="sub">先在海邊通過入口問題，再下海認識 6 位海洋朋友</div></div>
+  </header>
+  <div class="play"><div class="main"><div class="hud2"><div><span>海洋朋友</span><span class="friends" id="friends"></span></div><div><span>答對</span><span id="score">★ 0</span></div></div>
+  <div class="stagebox" id="box">
+    <canvas id="cv" width="900" height="600" aria-label="海底探險遊戲畫面"></canvas>
+    <div class="toast" id="toast" role="status"></div>
+    <div class="overlay" id="ov"><div class="qbox" id="qb" aria-live="polite"></div></div>
+  </div>
+  <p class="hint" style="margin-top:10px">用方向鍵或 WASD 移動，也可以用手指或滑鼠點一下想去的地方。走到海邊會有入口問題，下海後碰到海洋動物，牠們會問你問題。</p>
+  </div><aside class="how" aria-label="玩法說明"><h2>玩法說明</h2><ol>
+<li><span><b>移動</b>電腦用方向鍵或 W A S D；平板和手機用手指點一下想去的地方，或按住拖曳。</span></li>
+<li><span><b>海邊入口</b>走到海邊的「入口問題」牌，答對 3 題，才能戴上蛙鏡下海。</span></li>
+<li><span><b>交朋友</b>下海後，碰到頭上有「?」的海洋動物，牠會問 2 個問題。答完就成為朋友，會跟著你游。</span></li>
+<li><span><b>答錯沒關係</b>可以重新選。一次就答對才會加星星。</span></li>
+<li><span><b>最後關卡</b>6 位朋友到齊後，垃圾會從海面掉下來。你會自動發射泡泡，移動位置瞄準，把垃圾打回去。垃圾掉到海底會扣愛心（共 7 顆），撐過 30 秒就過關。</span></li>
+<li><span><b>稱號</b>依一次就答對的題數，得到「珊瑚守護大師」、「海洋小專家」或「珊瑚見習生」。</span></li>
+</ol><div class="tip">上方「海洋朋友」會顯示已經交到的朋友。</div></aside></div>
+  <p class="note">遊戲裡的句子是一般的珊瑚科學知識。玩完可以對照〈珊瑚繁殖 充滿生機〉、〈地球發燒 珊瑚變白〉，找找看哪些說法文章裡也有。</p>
+</div>
+<script>
+(function(){
+var W=900,H=600,SHORE=170;
+var cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+var ov=document.getElementById('ov'),qb=document.getElementById('qb'),toastEl=document.getElementById('toast');
+var friendsEl=document.getElementById('friends'),scoreEl=document.getElementById('score');
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+
+/* ---------- 角色圖（原創 SVG，面向右） ---------- */
+function face(cx,cy,dx,r,mouth){
+  var m=mouth==='o'?'<circle cx="'+cx+'" cy="'+(cy+16)+'" r="4.5" fill="#c2564b"/>':'<path d="M'+(cx-9)+','+(cy+12)+' Q'+cx+','+(cy+24)+' '+(cx+9)+','+(cy+12)+'" stroke="#7a2e3a" stroke-width="5" fill="none" stroke-linecap="round"/>';
+  return '<ellipse cx="'+(cx-dx)+'" cy="'+cy+'" rx="'+r+'" ry="'+(r+3)+'" fill="#3b2a2a"/><ellipse cx="'+(cx+dx)+'" cy="'+cy+'" rx="'+r+'" ry="'+(r+3)+'" fill="#3b2a2a"/><circle cx="'+(cx-dx+3)+'" cy="'+(cy-5)+'" r="4" fill="#fff"/><circle cx="'+(cx+dx+3)+'" cy="'+(cy-5)+'" r="4" fill="#fff"/><ellipse cx="'+(cx-dx-10)+'" cy="'+(cy+10)+'" rx="8" ry="5" fill="#ff8fa3" opacity=".6"/><ellipse cx="'+(cx+dx+10)+'" cy="'+(cy+10)+'" rx="8" ry="5" fill="#ff8fa3" opacity=".6"/>'+m;
+}
+var WS='stroke="#fff" stroke-width="5"';
+var SVGS={
+ clown:'<path d="M150,100 L190,70 L190,130 Z" fill="#ff8a3c" '+WS+'/><ellipse cx="100" cy="100" rx="68" ry="54" fill="#ff8a3c" '+WS+'/><path d="M62,52 Q54,100 64,148 Q80,150 84,146 Q74,100 82,50Z" fill="#fff"/><path d="M112,48 Q122,100 112,154 Q130,152 136,138 Q142,100 130,56Z" fill="#fff"/><path d="M80,44 Q100,18 130,48 Q106,42 80,44Z" fill="#ff6f2c" '+WS+'/>'+face(96,98,20,10),
+ turtle:'<ellipse cx="54" cy="150" rx="20" ry="12" fill="#7ed6a0" '+WS+' transform="rotate(-20 54 150)"/><ellipse cx="146" cy="150" rx="20" ry="12" fill="#7ed6a0" '+WS+' transform="rotate(20 146 150)"/><ellipse cx="100" cy="130" rx="64" ry="46" fill="#3fb27f" '+WS+'/><path d="M70,114 L100,104 L130,114 L120,144 L80,144Z" fill="none" stroke="#2e8f63" stroke-width="4"/><circle cx="100" cy="74" r="44" fill="#8fe0a8" '+WS+'/>'+face(100,76,20,10,'o'),
+ octo:'<g stroke="#9a6be0" stroke-width="16" fill="none" stroke-linecap="round"><path d="M62,140 q-10,26 -4,40"/><path d="M86,142 q-4,28 6,42"/><path d="M114,142 q4,28 -6,42"/><path d="M138,140 q10,26 4,40"/></g><ellipse cx="100" cy="96" rx="60" ry="62" fill="#a67be8" '+WS+'/>'+face(100,100,22,10,'o'),
+ jelly:'<g stroke="#c7b2f2" stroke-width="9" fill="none" stroke-linecap="round"><path d="M60,116 q-8,20 0,36 q8,16 0,32"/><path d="M84,116 q-8,20 0,36 q8,16 0,32"/><path d="M108,116 q-8,20 0,36 q8,16 0,32"/><path d="M132,116 q-8,20 0,36 q8,16 0,32"/></g><path d="M30,116 Q30,22 100,22 Q170,22 170,116Z" fill="#d2bff7" stroke="#fff" stroke-width="6"/><circle cx="64" cy="50" r="7" fill="#fff" opacity=".7"/>'+face(100,78,24,10),
+ star:(function(){var p=[];for(var i=0;i<10;i++){var a=-Math.PI/2+i*Math.PI/5,r=i%2===0?86:40;p.push((100+r*Math.cos(a)).toFixed(1)+','+(108+r*Math.sin(a)).toFixed(1))}return '<polygon points="'+p.join(' ')+'" fill="#ff8a80" stroke="#fff" stroke-width="7" stroke-linejoin="round"/>'+face(100,108,17,9)+'<circle cx="76" cy="58" r="3.5" fill="#ffc1bb"/><circle cx="124" cy="58" r="3.5" fill="#ffc1bb"/><circle cx="100" cy="42" r="3.5" fill="#ffc1bb"/>'})(),
+ crab:'<circle cx="38" cy="86" r="22" fill="#ff6b6b" '+WS+'/><circle cx="162" cy="86" r="22" fill="#ff6b6b" '+WS+'/><ellipse cx="100" cy="118" rx="68" ry="50" fill="#ff7f7f" '+WS+'/><line x1="72" y1="52" x2="72" y2="74" stroke="#ff7f7f" stroke-width="9"/><line x1="128" y1="52" x2="128" y2="74" stroke="#ff7f7f" stroke-width="9"/><circle cx="72" cy="46" r="13" fill="#fff" stroke="#ff7f7f" stroke-width="4"/><circle cx="128" cy="46" r="13" fill="#fff" stroke="#ff7f7f" stroke-width="4"/><circle cx="72" cy="48" r="6" fill="#3b2a2a"/><circle cx="128" cy="48" r="6" fill="#3b2a2a"/><ellipse cx="62" cy="124" rx="9" ry="5.5" fill="#ff3f6e" opacity=".5"/><ellipse cx="138" cy="124" rx="9" ry="5.5" fill="#ff3f6e" opacity=".5"/><path d="M88,116 Q100,132 112,116" stroke="#7a2e3a" stroke-width="5" fill="none" stroke-linecap="round"/>'
+};
+function kid(snorkel){
+  var H='#7a4630',skin='#ffe3cc';
+  var eyes=function(){return '<ellipse cx="74" cy="104" rx="13" ry="16" fill="#3b2a2a"/><ellipse cx="126" cy="104" rx="13" ry="16" fill="#3b2a2a"/><circle cx="79" cy="97" r="5.5" fill="#fff"/><circle cx="131" cy="97" r="5.5" fill="#fff"/><circle cx="70" cy="110" r="2.8" fill="#fff"/><circle cx="122" cy="110" r="2.8" fill="#fff"/>'};
+  var g='';
+  g+='<circle cx="46" cy="46" r="24" fill="'+H+'"/><circle cx="154" cy="46" r="24" fill="'+H+'"/><circle cx="46" cy="46" r="9" fill="#ff7a8a"/><circle cx="154" cy="46" r="9" fill="#ff7a8a"/>';
+  if(snorkel)g+='<ellipse cx="62" cy="190" rx="22" ry="9" fill="#ff9a3c" stroke="#fff" stroke-width="4" transform="rotate(-12 62 190)"/><ellipse cx="138" cy="190" rx="22" ry="9" fill="#ff9a3c" stroke="#fff" stroke-width="4" transform="rotate(12 138 190)"/>';
+  g+='<rect x="72" y="150" width="56" height="42" rx="22" fill="#4dd0e1" stroke="#fff" stroke-width="4"/>';
+  g+='<circle cx="58" cy="166" r="12" fill="'+skin+'" stroke="#fff" stroke-width="3"/><circle cx="142" cy="166" r="12" fill="'+skin+'" stroke="#fff" stroke-width="3"/>';
+  g+='<ellipse cx="100" cy="170" rx="50" ry="17" fill="none" stroke="#ff7a8a" stroke-width="15"/><ellipse cx="100" cy="170" rx="50" ry="17" fill="none" stroke="#fff" stroke-width="15" stroke-dasharray="20 38"/>';
+  g+='<ellipse cx="100" cy="100" rx="64" ry="58" fill="'+skin+'" stroke="#fff" stroke-width="4"/>';
+  g+='<path d="M36,96 Q34,34 100,32 Q166,34 164,96 Q150,60 118,58 Q104,70 82,58 Q50,62 36,96Z" fill="'+H+'"/>';
+  g+='<path d="M90,36 Q100,20 110,36" fill="none" stroke="'+H+'" stroke-width="9" stroke-linecap="round"/>';
+  if(snorkel){
+    g+='<rect x="34" y="92" width="132" height="9" rx="4" fill="#2e9bd6" opacity=".9"/>';
+    g+='<circle cx="74" cy="104" r="27" fill="#d8f4ff" fill-opacity=".45" stroke="#2e9bd6" stroke-width="8"/><circle cx="126" cy="104" r="27" fill="#d8f4ff" fill-opacity=".45" stroke="#2e9bd6" stroke-width="8"/><line x1="100" y1="104" x2="100" y2="104" stroke="#2e9bd6" stroke-width="8"/>';
+    g+=eyes();
+    g+='<path d="M170,30 L170,102 Q170,118 152,118" stroke="#ff8a3c" stroke-width="10" fill="none" stroke-linecap="round"/><circle cx="170" cy="28" r="7" fill="#ffd54f"/>';
+  }else g+=eyes();
+  g+='<ellipse cx="50" cy="124" rx="11" ry="7" fill="#ff8fa3" opacity=".7"/><ellipse cx="150" cy="124" rx="11" ry="7" fill="#ff8fa3" opacity=".7"/>';
+  g+='<path d="M86,128 Q100,148 114,128 Z" fill="#c2564b" stroke="#7a2e3a" stroke-width="3" stroke-linejoin="round"/><path d="M93,138 Q100,145 107,138 Q100,134 93,138Z" fill="#ff8fa3"/>';
+  return g;
+}
+function uri(inner){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">'+inner+'</svg>')}
+var IMG={};
+var names=['clown','turtle','octo','jelly','star','crab'];
+var pending=0;
+function load(key,inner){pending++;var im=new Image();im.onload=function(){pending--;if(pending===0)start()};im.onerror=function(){pending--;if(pending===0)start()};im.src=uri(inner);IMG[key]=im;}
+names.forEach(function(n){load(n,SVGS[n])});
+load('kid0',kid(false));load('kid1',kid(true));
+
+/* ---------- 題目 ---------- */
+var GATE={name:'海邊入口牌',img:'kid0',intro:'歡迎來到珊瑚海灣！下海前，先答對 3 個入口問題。',qs:[
+ {q:'下海玩水前，哪一種準備對珊瑚比較友善？',o:['穿防曬衣和帽子，少用會流進海裡的防曬乳。','塗很多防曬乳，再直接下水。','什麼都不準備，到了再說。'],why:'有些防曬乳成分被認為會傷害珊瑚，用衣物和帽子遮蔽更友善。'},
+ {q:'在海裡看到漂亮的珊瑚，應該怎麼做？',o:['只用眼睛欣賞，不踩、不碰、不帶走。','撿一小塊帶回家當紀念。','站上去拍照，拍完就走。'],why:'珊瑚是活的動物，生長很慢，踩踏或帶走都會傷害珊瑚礁。'},
+ {q:'為什麼不能把垃圾留在海邊？',o:['垃圾會被帶進海裡，傷害海洋生物。','因為海灘會變得太乾淨。','垃圾放在海邊不會有任何影響。'],why:'塑膠和垃圾會流進海洋，海洋生物可能纏住或誤吃。'}
+]};
+var ANIMALS=[
+ {id:'clown',name:'小丑魚',x:230,y:300,ax:70,ay:30,sp:.8,size:70,qs:[
+  {q:'我住在珊瑚礁。珊瑚礁只佔海底不到 1% 的面積，卻是大約多少海洋生物的家？',o:['大約四分之一','只有幾隻','一隻也沒有'],why:'珊瑚礁像海底的城市，許多魚和小動物都靠它生活。'},
+  {q:'珊瑚礁對海邊的人有什麼幫助？',o:['減緩海浪，幫忙保護海岸。','讓海水變得更熱。','讓海岸被浪沖得更快。'],why:'珊瑚礁像天然防波堤，能消耗一部分海浪的力量。'}]},
+ {id:'turtle',name:'海龜',x:660,y:260,ax:90,ay:20,sp:.55,size:92,qs:[
+  {q:'珊瑚是植物還是動物？',o:['動物','植物','石頭'],why:'珊瑚是動物，身體裡的共生藻才會做光合作用。'},
+  {q:'塑膠袋在海裡像水母，我們海龜會誤吃。你可以怎麼做？',o:['減少一次性塑膠，自備袋子和水壺。','把塑膠袋丟進海裡。','塑膠袋不會傷害海龜，不用管。'],why:'少用一次性塑膠，才能減少流進海洋的垃圾。'}]},
+ {id:'octo',name:'章魚',x:150,y:480,ax:50,ay:25,sp:.9,size:84,qs:[
+  {q:'住在珊瑚裡的共生藻，有什麼作用？',o:['讓珊瑚有顏色，也提供養分。','讓珊瑚變得更重。','讓珊瑚會游泳。'],why:'共生藻和珊瑚互相幫忙，珊瑚給牠住處，牠給珊瑚顏色和養分。'},
+  {q:'珊瑚白化是怎麼發生的？',o:['海水太熱，珊瑚把共生藻排出體外。','珊瑚洗太多次澡。','珊瑚喝太多海水變白。'],why:'共生藻離開後，珊瑚失去顏色，也少了養分，就會變白。'}]},
+ {id:'jelly',name:'水母',x:470,y:400,ax:110,ay:50,sp:.6,size:86,qs:[
+  {q:'白化的珊瑚一定已經死亡了嗎？',o:['不一定，水溫恢復，還有機會恢復。','一定死了，完全沒救。','過一晚就會自己變回來。'],why:'白化不等於死亡，但高溫太久會增加死亡的風險。'},
+  {q:'海水只要比平常夏天的最高溫度高約多少，持續幾週，珊瑚就可能白化？',o:['約 1°C','約 10°C','約 100°C'],why:'珊瑚住在很穩定的溫度範圍，只高一點點、時間夠長，就會有壓力。'}]},
+ {id:'star',name:'海星',x:790,y:520,ax:50,ay:18,sp:.5,size:70,qs:[
+  {q:'珊瑚有哪兩種增加的方式？',o:['有性生殖（產卵排精）和無性生殖（斷枝、分裂）','只會開花結果','只會從別的海裡搬家'],why:'有卵和精子結合，是有性生殖；斷枝或分裂長大，是無性生殖。'},
+  {q:'一段斷掉的珊瑚枝，附著後長成新的珊瑚，是哪一種繁殖？',o:['無性生殖','有性生殖','都不是'],why:'沒有經過卵和精子結合，是無性生殖。'}]},
+ {id:'crab',name:'螃蟹',x:540,y:555,ax:130,ay:6,sp:.7,size:70,qs:[
+  {q:'減少用電、少開車，能幫助珊瑚嗎？',o:['能，減少碳排放，減緩全球暖化和海水變熱。','不能，兩件事沒有關係。','能，因為會讓海水變鹹。'],why:'暖化讓海水變熱，是珊瑚白化的主要原因之一。'},
+  {q:'我想讓更多同學認識珊瑚白化，哪一種方法最好？',o:['做成簡報，說明資料來源，向同學分享。','看到消息就轉傳，不用查來源。','等別人去做就好。'],why:'有來源的分享更可靠，也能讓更多人一起行動。'}]}
+];
+var TOTALQ=GATE.qs.length+ANIMALS.reduce(function(a,b){return a+b.qs.length},0);
+
+/* ---------- 狀態 ---------- */
+var D={},dodgeLives=0,P,passed,mode,score,friendsN,t0=0,keys={},target=null,toastT=0,cool=0,bubbles=[];
+function reset(){
+  P={x:450,y:110,fx:1,sz:92};passed=false;mode='play';score=0;friendsN=0;target=null;cool=0;
+  ANIMALS.forEach(function(a){a.friend=false;a.px=a.x;a.py=a.y;a.fx=1});
+  bubbles=[];for(var i=0;i<26;i++)bubbles.push({x:Math.random()*W,y:SHORE+Math.random()*(H-SHORE),r:2+Math.random()*5,v:10+Math.random()*25});
+  hudUpdate();ov.classList.remove('on');say('用方向鍵或點一下畫面，走到海邊！',3200);
+}
+function hudUpdate(){
+  friendsEl.innerHTML=ANIMALS.map(function(a){return '<img class="'+(a.friend?'on':'')+'" alt="'+a.name+'" src="'+IMG[a.id].src+'">'}).join('');
+  scoreEl.textContent='★ '+score+' / '+TOTALQ;
+}
+function say(t,ms){toastEl.textContent=t;toastEl.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){toastEl.classList.remove('on')},ms||2600)}
+
+/* ---------- 問答 ---------- */
+function ask(src,done){
+  mode='quiz';var i=0,first=true;
+  var order=shuffle(src.qs.map(function(q,k){return k}));
+  function render(){
+    var q=src.qs[order[i]];var o=shuffle([0,1,2]);
+    qb.innerHTML='<div class="who"><img alt="" src="'+IMG[src.img||src.id].src+'"><div><b>'+src.name+'</b><span>'+(i===0&&src.intro?esc(src.intro):'第 '+(i+1)+' / '+src.qs.length+' 題')+'</span></div></div><div class="say">'+esc(q.q)+'</div><div class="opts">'+
+      o.map(function(k){return '<button class="opt long" data-k="'+k+'">'+esc(q.o[k])+'</button>'}).join('')+'</div><div id="fbk"></div>';
+    first=true;
+  }
+  render();
+  ov.classList.add('on');
+  qb.onclick=function(e){
+    var n=e.target.closest('[data-n]');
+    if(n){i++;if(i>=src.qs.length){ov.classList.remove('on');qb.onclick=null;done()}else render();return}
+    var b=e.target.closest('[data-k]');if(!b)return;
+    var q=src.qs[order[i]],fb=document.getElementById('fbk');
+    if(+b.dataset.k===0){
+      qb.querySelectorAll('.opt').forEach(function(x){x.disabled=true;if(+x.dataset.k===0)x.classList.add('good')});
+      if(first){score++;hudUpdate()}
+      fb.innerHTML='<div class="fb ok"><b>答對了！</b> '+esc(q.why)+'</div><div class="row"><span class="hint">'+(first?'一次就答對 +1 ★':'')+'</span><button class="btn" data-n="1">'+(i+1>=src.qs.length?'完成':'下一題')+'</button></div>';
+    }else{first=false;b.classList.add('bad');b.disabled=true;fb.innerHTML='<div class="fb no"><b>再想想看。</b> 換一個答案試試。</div>'}
+  };
+}
+function gateQuiz(){
+  ask(GATE,function(){passed=true;mode='play';say('入口通過！戴上蛙鏡，下海囉！',3000);P.y=SHORE+30;cool=60});
+}
+function animalQuiz(a){
+  ask(a,function(){
+    a.friend=true;friendsN++;hudUpdate();mode='play';cool=90;
+    if(friendsN===ANIMALS.length){setTimeout(dodgeIntro,700)}else say(a.name+'成為你的朋友了！（'+friendsN+' / '+ANIMALS.length+'）',2600);
+  });
+}
+function ending(){
+  mode='end';
+  var rank=score>=TOTALQ-2?'珊瑚守護大師':score>=TOTALQ-5?'海洋小專家':'珊瑚見習生';
+  qb.innerHTML='<div class="endcard"><div class="who" style="justify-content:center"><img alt="" src="'+IMG.kid1.src+'"></div><div class="big">'+rank+'</div><p>6 位海洋朋友都在你身邊了！一次就答對 <b>'+score+' / '+TOTALQ+'</b> 題。</p><p>反擊垃圾關卡：打回 '+dodgeHits+' 件，剩下 '+'♥'.repeat(dodgeLives)+'</p><p class="hint">想一想：今天學到哪一件事，可以回家告訴家人？</p><div class="row" style="justify-content:center"><button class="btn" id="again">再玩一次</button></div></div>';
+  ov.classList.add('on');
+  document.getElementById('again').onclick=function(){qb.onclick=null;reset()};
+}
+
+
+/* ---------- 最後關卡：把垃圾打回去 ---------- */
+var dodgeHits=0;
+function dodgeIntro(){
+  mode='quiz';
+  qb.innerHTML='<div class="endcard"><div class="who" style="justify-content:center"><img alt="" src="'+IMG.kid1.src+'"></div><div class="big" style="font-size:clamp(22px,6vw,30px)">最後關卡：把垃圾打回去！</div><p>垃圾從海面掉下來了！你會自動發射<b>泡泡</b>往上打，移動位置瞄準，把垃圾打回去。垃圾掉到海底會扣愛心，你有 7 顆，撐過 <b>30 秒</b>就過關。</p><div class="row" style="justify-content:center"><button class="btn" id="goDodge">開始反擊</button></div></div>';
+  ov.classList.add('on');
+  document.getElementById('goDodge').onclick=startDodge;
+}
+function startDodge(){
+  ov.classList.remove('on');
+  D={t:30,lives:7,items:[],spawn:0,fire:0,shots:[],hit:0,pops:[]};
+  P.x=450;P.y=470;target=null;mode='dodge';say('用泡泡把垃圾打回去！',2200);
+}
+function dodgeEnd(win){
+  mode='quiz';
+  if(win){dodgeLives=D.lives;dodgeHits=D.hit;qb.innerHTML='<div class="endcard"><div class="big" style="font-size:clamp(22px,6vw,30px)">反擊成功！</div><p>你撐過了 30 秒，打回 <b>'+D.hit+'</b> 件垃圾，還剩 '+'♥'.repeat(D.lives)+'。海水乾淨多了！</p><div class="row" style="justify-content:center"><button class="btn" id="goEnd">看成績</button></div></div>';ov.classList.add('on');document.getElementById('goEnd').onclick=function(){ov.classList.remove('on');ending()}}
+  else{qb.innerHTML='<div class="endcard"><div class="big" style="font-size:clamp(22px,6vw,30px)">垃圾掉到海底了…</div><p>你打回了 '+D.hit+' 件。沒關係，再試一次！小提醒：最好的辦法是一開始就不要製造垃圾。</p><div class="row" style="justify-content:center"><button class="btn" id="goAgain">再試一次</button></div></div>';ov.classList.add('on');document.getElementById('goAgain').onclick=startDodge}
+}
+var KINDS=['bottle','bag','can'];
+function spawnTrash(){
+  D.items.push({x:30+Math.random()*(W-60),y:SHORE-10,vy:55+Math.random()*50+(30-D.t)*2,k:KINDS[Math.floor(Math.random()*3)],r:Math.random()*6,vr:(Math.random()-.5)*3,sw:Math.random()*6,sa:8+Math.random()*18,back:false,dx:0,al:1});
+}
+function updateDodge(dt,t){
+  D.t-=dt;D.spawn-=dt;D.fire-=dt;
+  if(D.spawn<=0){spawnTrash();D.spawn=Math.max(.6,1.1-(30-D.t)*.016)}
+  if(D.fire<=0){D.shots.push({x:P.x,y:P.y-P.sz*.4,vy:-460});D.fire=.22}
+  for(var i=D.shots.length-1;i>=0;i--){var sh=D.shots[i];sh.y+=sh.vy*dt;if(sh.y<SHORE-10)D.shots.splice(i,1)}
+  for(var j=D.items.length-1;j>=0;j--){
+    var it=D.items[j];
+    if(it.back){it.y+=it.vy*dt;it.r+=it.vr*dt;it.al-=dt*.9;if(it.y<SHORE-30||it.al<=0)D.items.splice(j,1);continue}
+    it.y+=it.vy*dt;it.r+=it.vr*dt;it.dx=it.x+Math.sin(t*2+it.sw)*it.sa;
+    var hitBy=-1;for(var k=0;k<D.shots.length;k++){if(Math.hypot(D.shots[k].x-it.dx,D.shots[k].y-it.y)<40){hitBy=k;break}}
+    if(hitBy>=0){D.shots.splice(hitBy,1);it.back=true;it.vy=-420;it.vr=12;D.hit++;D.pops.push({x:it.dx,y:it.y,a:1});continue}
+    if(it.y>H-34){D.items.splice(j,1);D.lives--;say('垃圾掉到海底了！',900);if(D.lives<=0){dodgeEnd(false);return}}
+  }
+  for(var m=D.pops.length-1;m>=0;m--){D.pops[m].y-=40*dt;D.pops[m].a-=dt*1.4;if(D.pops[m].a<=0)D.pops.splice(m,1)}
+  if(D.t<=0){D.t=0;dodgeEnd(true)}
+}
+function drawTrash(it){
+  ctx.save();ctx.globalAlpha=Math.max(0,it.al);ctx.translate(it.dx,it.y);ctx.rotate(it.r);ctx.lineWidth=3;ctx.strokeStyle='rgba(30,60,90,.7)';
+  if(it.k==='bottle'){ctx.fillStyle='rgba(190,235,255,.9)';ctx.beginPath();ctx.roundRect(-10,-14,20,32,7);ctx.fill();ctx.stroke();ctx.fillStyle='#2e9bd6';ctx.fillRect(-6,-22,12,8);ctx.strokeRect(-6,-22,12,8);ctx.fillStyle='#fff';ctx.fillRect(-10,-2,20,10)}
+  else if(it.k==='bag'){ctx.fillStyle='rgba(255,255,255,.92)';ctx.beginPath();ctx.moveTo(-14,-14);ctx.quadraticCurveTo(-24,6,-12,20);ctx.lineTo(12,20);ctx.quadraticCurveTo(24,6,14,-14);ctx.closePath();ctx.fill();ctx.stroke();ctx.beginPath();ctx.arc(-7,-17,6,Math.PI,0);ctx.arc(7,-17,6,Math.PI,0);ctx.stroke()}
+  else{ctx.fillStyle='#b8c4cc';ctx.beginPath();ctx.roundRect(-11,-14,22,30,4);ctx.fill();ctx.stroke();ctx.fillStyle='#ff6f7d';ctx.fillRect(-11,-4,22,10);ctx.strokeStyle='#7a8c98';ctx.strokeRect(-11,-4,22,10)}
+  ctx.restore();
+}
+function drawShots(){
+  D.shots.forEach(function(s){
+    ctx.fillStyle='rgba(255,255,255,.55)';ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(s.x,s.y,14,0,7);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(s.x-4,s.y-4,3.5,0,7);ctx.fill();
+  });
+  D.pops.forEach(function(p){ctx.save();ctx.globalAlpha=Math.max(0,p.a);ctx.font='bold 24px sans-serif';ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='rgba(10,50,90,.8)';ctx.fillStyle='#ffd54f';ctx.strokeText('+1',p.x,p.y);ctx.fillText('+1',p.x,p.y);ctx.restore()});
+}
+function drawDodgeHud(){
+  ctx.save();ctx.font='bold 24px sans-serif';ctx.textAlign='left';ctx.lineWidth=5;ctx.strokeStyle='rgba(10,50,90,.75)';ctx.fillStyle='#ff6f7d';
+  var h='';for(var i=0;i<7;i++)h+=i<D.lives?'♥':'♡';
+  ctx.strokeText(h,16,SHORE+34);ctx.fillText(h,16,SHORE+34);
+  ctx.textAlign='center';ctx.fillStyle='#ffd54f';var mid='打回 '+D.hit+' 件';ctx.strokeText(mid,W/2,SHORE+34);ctx.fillText(mid,W/2,SHORE+34);
+  ctx.textAlign='right';ctx.fillStyle='#fff';var tt='⏱ '+Math.ceil(D.t);ctx.strokeText(tt,W-16,SHORE+34);ctx.fillText(tt,W-16,SHORE+34);ctx.restore();
+}
+
+/* ---------- 輸入 ---------- */
+window.addEventListener('keydown',function(e){var k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d'].indexOf(k)>=0){keys[k]=true;target=null;if(mode==='play')e.preventDefault()}});
+window.addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false});
+function setTarget(e){var r=cv.getBoundingClientRect();target={x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}
+var down=false;
+cv.addEventListener('pointerdown',function(e){down=true;setTarget(e);try{cv.setPointerCapture(e.pointerId)}catch(x){}});
+cv.addEventListener('pointermove',function(e){if(down)setTarget(e)});
+cv.addEventListener('pointerup',function(){down=false});
+
+/* ---------- 更新 ---------- */
+function update(dt,t){
+  var sp=215;
+  if(mode==='play'||mode==='dodge'){
+    var dx=0,dy=0;
+    if(keys.arrowleft||keys.a)dx-=1;if(keys.arrowright||keys.d)dx+=1;if(keys.arrowup||keys.w)dy-=1;if(keys.arrowdown||keys.s)dy+=1;
+    if(!dx&&!dy&&target){var tx=target.x-P.x,ty=target.y-P.y,d=Math.hypot(tx,ty);if(d>8){dx=tx/d;dy=ty/d}else target=null}
+    else if(dx&&dy){dx*=.707;dy*=.707}
+    P.x+=dx*sp*dt;P.y+=dy*sp*dt;if(dx>0.1)P.fx=1;else if(dx<-0.1)P.fx=-1;
+    P.x=Math.max(34,Math.min(W-34,P.x));P.y=Math.max(mode==='dodge'?SHORE+40:34,Math.min(H-34,P.y));
+    if(mode==='play'&&!passed&&P.y>SHORE-8){P.y=SHORE-30;target=null;gateQuiz()}
+    cool=Math.max(0,cool-1);
+    if(mode==='dodge')updateDodge(dt,t);
+  }
+  ANIMALS.forEach(function(a,i){
+    if(a.friend){
+      var k=0;for(var j=0;j<i;j++)if(ANIMALS[j].friend)k++;
+      var tx=P.x-P.fx*(70+k*58),ty=P.y+(k%2?26:-22)+Math.sin(t*2+i)*8;
+      a.px+=(tx-a.px)*Math.min(1,dt*3);a.py+=(ty-a.py)*Math.min(1,dt*3);a.fx=P.fx;
+    }else{
+      var nx=a.x+Math.cos(t*a.sp+i*2)*a.ax,ny=a.y+Math.sin(t*a.sp*1.3+i)*a.ay;
+      if(nx-a.px>0.2)a.fx=1;else if(nx-a.px<-0.2)a.fx=-1;
+      a.px=nx;a.py=ny;
+      if(mode==='play'&&passed&&cool<=0&&Math.hypot(P.x-a.px,P.y-a.py)<(P.sz+a.size)*.42){target=null;P.x+=(P.x-a.px)*.3;P.y+=(P.y-a.py)*.3;animalQuiz(a)}
+    }
+  });
+  bubbles.forEach(function(b){b.y-=b.v*dt;b.x+=Math.sin(t+b.r)*6*dt;if(b.y<SHORE+4){b.y=H+10;b.x=Math.random()*W}});
+}
+
+/* ---------- 繪圖 ---------- */
+function drawScene(t){
+  var g=ctx.createLinearGradient(0,0,0,SHORE);g.addColorStop(0,'#aee6ff');g.addColorStop(1,'#e5f7ff');ctx.fillStyle=g;ctx.fillRect(0,0,W,SHORE);
+  ctx.fillStyle='#ffe27a';ctx.beginPath();ctx.arc(110,56,34,0,7);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.9)';[[300,48,1],[640,36,.8],[800,70,.6]].forEach(function(c){ctx.beginPath();ctx.arc(c[0],c[1],22*c[2],0,7);ctx.arc(c[0]+24*c[2],c[1]+4,18*c[2],0,7);ctx.arc(c[0]-22*c[2],c[1]+6,16*c[2],0,7);ctx.fill()});
+  // 沙灘
+  ctx.fillStyle='#ffe9b8';ctx.fillRect(0,84,W,SHORE-84);
+  ctx.fillStyle='#ffdf9c';for(var i=0;i<30;i++){ctx.beginPath();ctx.arc((i*97)%W,100+(i*37)%60,3,0,7);ctx.fill()}
+  // 水
+  var w=ctx.createLinearGradient(0,SHORE,0,H);w.addColorStop(0,'#56c3ee');w.addColorStop(.55,'#2a9bd6');w.addColorStop(1,'#1572b0');ctx.fillStyle=w;ctx.fillRect(0,SHORE,W,H-SHORE);
+  ctx.fillStyle='rgba(255,255,255,.08)';for(var r=0;r<5;r++){ctx.beginPath();var x0=80+r*180+Math.sin(t*.4+r)*30;ctx.moveTo(x0,SHORE);ctx.lineTo(x0+70,SHORE);ctx.lineTo(x0+160,H);ctx.lineTo(x0+60,H);ctx.fill()}
+  // 泡沫線
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(0,SHORE-4);for(var x=0;x<=W;x+=20)ctx.lineTo(x,SHORE-4+Math.sin(x*.05+t*2)*4);ctx.lineTo(W,SHORE+8);ctx.lineTo(0,SHORE+8);ctx.fill();
+  // 海底沙
+  ctx.fillStyle='#e9cf8c';ctx.beginPath();ctx.moveTo(0,H);for(var x2=0;x2<=W;x2+=30)ctx.lineTo(x2,H-26+Math.sin(x2*.03)*6);ctx.lineTo(W,H);ctx.fill();
+  // 珊瑚與水草
+  [[60,H-20,'#ff7a8a'],[260,H-18,'#ffa04d'],[430,H-22,'#ff7a8a'],[620,H-16,'#c084f5'],[840,H-22,'#ffa04d']].forEach(function(c){
+    ctx.strokeStyle=c[2];ctx.lineWidth=14;ctx.lineCap='round';
+    [[-22,-52],[0,-72],[22,-48]].forEach(function(b,k){ctx.beginPath();ctx.moveTo(c[0],c[1]);ctx.lineTo(c[0]+b[0]+Math.sin(t+k)*1.5,c[1]+b[1]);ctx.stroke()});
+    ctx.fillStyle=c[2];ctx.beginPath();ctx.ellipse(c[0],c[1],36,16,0,0,7);ctx.fill()});
+  ctx.strokeStyle='#2fb58a';ctx.lineWidth=7;
+  [120,350,520,740,880].forEach(function(x,k){ctx.beginPath();ctx.moveTo(x,H-18);for(var y=0;y<=70;y+=10)ctx.lineTo(x+Math.sin(t*1.5+y*.08+k)*10,H-18-y);ctx.stroke()});
+  // 入口牌
+  if(!passed){ctx.fillStyle='#b5793e';ctx.fillRect(690,98,10,56);ctx.fillStyle='#fff';ctx.fillRect(650,70,90,40);ctx.strokeStyle='#b5793e';ctx.lineWidth=5;ctx.strokeRect(650,70,90,40);ctx.fillStyle='#1e88d6';ctx.font='bold 17px sans-serif';ctx.textAlign='center';ctx.fillText('入口問題',695,96)}
+  // 水下氣泡
+  ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=2;bubbles.forEach(function(b){ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.stroke()});
+}
+function sprite(img,x,y,s,fx,bob){
+  ctx.save();ctx.translate(x,y+(bob||0));ctx.scale(fx,1);ctx.drawImage(img,-s/2,-s/2,s,s);ctx.restore();
+}
+function draw(t){
+  drawScene(t);
+  // 影子
+  if(!passed){ctx.fillStyle='rgba(0,0,0,.12)';ctx.beginPath();ctx.ellipse(P.x,P.y+P.sz*.42,P.sz*.3,8,0,0,7);ctx.fill()}
+  ANIMALS.slice().sort(function(a,b){return a.py-b.py}).forEach(function(a){
+    sprite(IMG[a.id],a.px,a.py,a.size,a.fx,Math.sin(t*2+a.x)*4);
+    if(!a.friend&&passed&&mode==='play'){ctx.fillStyle='#fff';ctx.strokeStyle='#ff9a3c';ctx.lineWidth=3;var bx=a.px,by=a.py-a.size*.62;ctx.beginPath();ctx.arc(bx,by,13,0,7);ctx.fill();ctx.stroke();ctx.fillStyle='#ff9a3c';ctx.font='bold 17px sans-serif';ctx.textAlign='center';ctx.fillText('?',bx,by+6)}
+  });
+  sprite(IMG[passed?'kid1':'kid0'],P.x,P.y,P.sz,P.fx,passed?Math.sin(t*3)*3:0);
+  if(mode==='dodge'){D.items.forEach(drawTrash);drawShots();drawDodgeHud()}
+  if(passed&&mode==='play'&&Math.random()<.04)bubbles.push({x:P.x+P.fx*18,y:P.y-30,r:2+Math.random()*3,v:40});
+  if(bubbles.length>40)bubbles.splice(26,bubbles.length-40);
+}
+
+/* ---------- 迴圈 ---------- */
+var last=0;
+function loop(ts){
+  var dt=Math.min(.05,(ts-last)/1000||0);last=ts;t0+=dt;
+  update(dt,t0);draw(t0);requestAnimationFrame(loop);
+}
+var started=false;
+function start(){if(started)return;started=true;reset();requestAnimationFrame(loop)}
+setTimeout(function(){if(!started){start()}},2500);
+})();
+
+</script>
+
+</body>
+</html>
